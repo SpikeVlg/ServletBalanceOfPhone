@@ -1,7 +1,6 @@
-package com.github.spikevlg.utils;
+package com.github.spikevlg.balanceofphone.utils;
 
 
-import com.github.spikevlg.balanceofphone.utils.DataValidator;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

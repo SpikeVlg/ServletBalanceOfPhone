@@ -72,7 +72,7 @@ public class MainController {
         logger.debug("adding new user with login %s", dirtyUserLogin);
 
         if (!dataValidator.isValideLogin(dirtyUserLogin)) {
-            logger.debug("invalid login");
+            logger.debug("invalid login %s", dirtyUserLogin);
             return ResponseCode.INVALID_LOGIN;
         }
 
@@ -112,6 +112,12 @@ public class MainController {
      */
     PhoneServiceResponse getUserBalance(String dirtyUserLogin, String password){
         logger.debug("getting balance for user %s", dirtyUserLogin);
+
+        if (!dataValidator.isValideLogin(dirtyUserLogin)) {
+            logger.debug("invalid login %s", dirtyUserLogin);
+            return new PhoneServiceResponse(ResponseCode.INVALID_LOGIN);
+        }
+
         String cleanPhoneLogin = dataValidator.cleanLogin(dirtyUserLogin);
         PhoneUser phoneUser = phoneServiceDAO.findByLogin(cleanPhoneLogin);
         if (phoneUser == null){
