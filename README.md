@@ -78,7 +78,7 @@ Get next result.
 </response>
 ```
 
-### Envirenment
+### Environments
 Tested on next envirenment:
 
 1. JDK 1.8.25

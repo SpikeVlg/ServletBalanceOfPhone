@@ -7,6 +7,9 @@ public enum RequestType {
     ADD_USER("new-agt")
     , GET_BALANCE("agt-bal");
 
+    /**
+     * XML code of request.
+     */
     String code;
 
     RequestType(String code){

@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Objects;
 
 @XmlRootElement(name="request")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -53,5 +54,20 @@ public class PhoneServiceRequest {
                 .add("login", login)
                 .add("password", password)
                 .toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, login, password);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof PhoneServiceRequest){
+            PhoneServiceRequest other = (PhoneServiceRequest)obj;
+            return Objects.equals(type, other.type)
+                    && Objects.equals(login, other.login)
+                    && Objects.equals(password, other.password);
+        } else return false;
     }
 }
