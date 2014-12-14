@@ -77,6 +77,18 @@ Get next result.
 	<bal>100.00</bal>
 </response>
 ```
+### Response codes
+
+|Code|Value|
+|---:|-----|
+|0|OK|
+|1|User already exists|
+|2|Invalid login|
+|3|Weak password|
+|4|Unknown action|
+|5|Unknown error|
+|6|Authentication error|
+|7|User not found|
 
 ### Environments
 Tested on next envirenment:
