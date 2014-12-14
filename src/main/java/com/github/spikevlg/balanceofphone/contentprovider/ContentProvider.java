@@ -60,6 +60,7 @@ public class ContentProvider {
             @Override
             public PhoneUser mapRow(ResultSet rs, int rowNum) throws SQLException {
                 PhoneUser phoneUser = new PhoneUser();
+                phoneUser.setId(rs.getInt("id"));
                 phoneUser.setLogin(rs.getString(PhoneServiceDAOJdbcTemplate.COLUMN_LOGIN));
                 phoneUser.setHashPassword(rs.getString(PhoneServiceDAOJdbcTemplate.COLUMN_HASH_PASSWORD));
                 return phoneUser;
