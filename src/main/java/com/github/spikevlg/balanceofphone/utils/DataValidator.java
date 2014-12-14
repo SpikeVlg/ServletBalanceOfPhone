@@ -2,6 +2,9 @@ package com.github.spikevlg.balanceofphone.utils;
 
 import org.springframework.stereotype.Component;
 
+/**
+ * Utils class for validate data.
+ */
 @Component
 public class DataValidator {
     private static final int MIN_LENGTH_PASSWORD = 10;
@@ -52,6 +55,11 @@ public class DataValidator {
         }
     }
 
+    /**
+     * Validate login. Login represent phone number.
+     * @param phoneLogin user login
+     * @return false if login invalid
+     */
     public boolean isValideLogin(String phoneLogin){
         if (phoneLogin == null){
             return false;
@@ -59,11 +67,15 @@ public class DataValidator {
         return phoneLogin.matches("\\+?\\d[\\d -]{5,20}\\d");
     }
 
+    /**
+     * Delete special characters from login.
+     * @param dirtyLogin user login from request
+     * @return login without special characters
+     */
     public String cleanLogin(String dirtyLogin){
         if (dirtyLogin == null){
             throw new IllegalArgumentException("dirtyLogin must be not null");
         }
-        String cleanLogin = dirtyLogin.replaceAll("-|\\+| ", "");
-        return cleanLogin;
+        return dirtyLogin.replaceAll("-|\\+| ", "");
     }
 }
