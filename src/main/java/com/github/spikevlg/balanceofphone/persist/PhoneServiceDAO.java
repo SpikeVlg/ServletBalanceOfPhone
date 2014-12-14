@@ -2,6 +2,9 @@ package com.github.spikevlg.balanceofphone.persist;
 
 import com.github.spikevlg.balanceofphone.model.PhoneUser;
 
+/**
+ * DAO interface for phone service.
+ */
 public interface PhoneServiceDAO {
     /**
      * Find phoneUser by login.

@@ -1,9 +1,23 @@
 package com.github.spikevlg.balanceofphone.model;
 
-public class PhoneUser {
+import com.google.common.base.MoreObjects;
 
+import java.util.Objects;
+
+public class PhoneUser {
+    /**
+     * User ID in database.
+     */
     private Integer id;
+
+    /**
+     * User login. Login represents phone number without special characters.
+     */
     private String login;
+
+    /**
+     * Hash of user password.
+     */
     private String hashPassword;
 
     public PhoneUser(Integer id, String login, String hashPassword) {
@@ -38,4 +52,28 @@ public class PhoneUser {
         this.hashPassword = password;
     }
 
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .omitNullValues()
+                .add("id", id)
+                .add("login", login)
+                .add("hashPassword", hashPassword)
+                .toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, login, hashPassword);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof PhoneUser){
+            PhoneUser other = (PhoneUser)obj;
+            return Objects.equals(id, other.id)
+                    && Objects.equals(login, other.login)
+                    && Objects.equals(hashPassword, other.hashPassword);
+        } else return false;
+    }
 }
