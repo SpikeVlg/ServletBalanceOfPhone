@@ -32,4 +32,4 @@ gradlew.bat
 logs/
 
 # database files
-*.db
+#*.db
