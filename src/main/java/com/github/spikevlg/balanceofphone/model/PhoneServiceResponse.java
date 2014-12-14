@@ -1,26 +1,28 @@
 package com.github.spikevlg.balanceofphone.model;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 
 @XmlRootElement(name="response")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class PhoneServiceResponse {
     @XmlElement(required = true, name="result-code")
-    private int code;
+    private ResponseCode code;
+
     @XmlElement(required = false, name="bal")
     private Double balance;
 
     public PhoneServiceResponse() {
     }
 
-    public int getCode() {
+    public PhoneServiceResponse(ResponseCode code){
+        this.code = code;
+    }
+
+    public ResponseCode getCode() {
         return code;
     }
 
-    public void setCode(int code) {
+    public void setCode(ResponseCode code) {
         this.code = code;
     }
 
