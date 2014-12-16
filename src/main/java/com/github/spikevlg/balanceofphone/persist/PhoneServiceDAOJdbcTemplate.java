@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * Implementation PhoneServiceDAO via Spring JdbcTemplate mechanism.
  */
-@Component
+@Component("jdbctemplate")
 public class PhoneServiceDAOJdbcTemplate implements PhoneServiceDAO{
     private Logger logger = LoggerFactory.getLogger(PhoneServiceDAOJdbcTemplate.class);;
     private JdbcTemplate jdbcTemplate;

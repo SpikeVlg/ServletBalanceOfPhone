@@ -33,3 +33,6 @@ logs/
 
 # database files
 #*.db
+
+# todo files
+*.todo

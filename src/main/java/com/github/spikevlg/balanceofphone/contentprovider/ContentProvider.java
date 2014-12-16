@@ -18,7 +18,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @Configuration
-//@ImportResource("classpath:database_config.xml")
 public class ContentProvider {
     /**
      * Create passwordEncoder object
@@ -33,12 +32,19 @@ public class ContentProvider {
      * Create dataSource object with disable autocommit mode.
      * Url located in file "application.properties".
      * @param connectionUrl connection url
+     * @param user for db connection
+     * @param password of user
      * @return create dataSource object
      */
     @Bean(destroyMethod="close")
-    public DataSource getDataSource(@Value("${spring.datasource.url}") String connectionUrl){
+    public DataSource getDataSource(@Value("${spring.datasource.url}") String connectionUrl
+            , @Value("${spring.datasource.username}") String user
+            , @Value("${spring.datasource.password}") String password)
+    {
         BasicDataSource basicDataSource = new BasicDataSource();
         basicDataSource.setUrl(connectionUrl);
+        basicDataSource.setUsername(user);
+        basicDataSource.setPassword(password);
         basicDataSource.setDefaultAutoCommit(false);
         return basicDataSource;
     }

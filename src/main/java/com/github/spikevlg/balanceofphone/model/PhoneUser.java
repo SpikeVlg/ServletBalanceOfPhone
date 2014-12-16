@@ -2,22 +2,29 @@ package com.github.spikevlg.balanceofphone.model;
 
 import com.google.common.base.MoreObjects;
 
+import javax.persistence.*;
 import java.util.Objects;
 
+@Entity
+@Table(name = "users", uniqueConstraints = {  @UniqueConstraint(columnNames = "login") })
 public class PhoneUser {
     /**
      * User ID in database.
      */
+    @Id
+    @GeneratedValue
     private Integer id;
 
     /**
      * User login. Login represents phone number without special characters.
      */
+    @Column(name = "login", unique = true, nullable = false, length = 255)
     private String login;
 
     /**
      * Hash of user password.
      */
+    @Column(name="hash_password", nullable = false, length = 255)
     private String hashPassword;
 
     public PhoneUser(Integer id, String login, String hashPassword) {
