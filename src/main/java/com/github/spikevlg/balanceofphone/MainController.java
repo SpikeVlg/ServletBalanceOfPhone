@@ -2,8 +2,8 @@ package com.github.spikevlg.balanceofphone;
 
 import com.github.spikevlg.balanceofphone.model.*;
 import com.github.spikevlg.balanceofphone.persist.PhoneServiceDAO;
-import com.github.spikevlg.balanceofphone.persist.UserExistsException;
-import com.github.spikevlg.balanceofphone.utils.DataValidator;
+import com.github.spikevlg.balanceofphone.persist.UserAlreadyExistsException;
+import com.github.spikevlg.balanceofphone.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 public class MainController {
-    private Logger logger = LoggerFactory.getLogger(MainController.class);;
+    private final static Logger logger = LoggerFactory.getLogger(MainController.class);;
     private PhoneServiceDAO phoneServiceDAO;
     private DataValidator dataValidator;
     private PasswordEncoder passwordEncoder;
@@ -40,101 +40,88 @@ public class MainController {
      */
     @RequestMapping(value = "/balance_of_phone", method = RequestMethod.POST)
     public PhoneServiceResponse processRequest(@RequestBody PhoneServiceRequest request) {
-        logger.debug("get request %s", request);
+        logger.debug("Get request: {}", request);
+        try {
+            if (request == null
+                    || request.getType() == null
+                    || request.getLogin() == null
+                    || request.getPassword() == null){
+                throw new RequestTypeNotSupportedException("Request is not supported. Request - " + request);
+            }
 
-        RequestType requestType = RequestType.getRequestTypeByCode(request.getType());
-
-        if (requestType == null){
-            logger.debug("request type is null");
-            return new PhoneServiceResponse(ResponseCode.UNKNOWN_ACTION);
+            switch (request.getType()){
+                case ADD_USER:
+                    addNewUser(request.getLogin(), request.getPassword());
+                    return new PhoneServiceResponse(ResponseCode.OK);
+                case GET_BALANCE:
+                    double balance = getUserBalance(request.getLogin(), request.getPassword());
+                    return new PhoneServiceResponse(ResponseCode.OK, balance);
+                default:
+                    //by default we don't have others actions
+                    throw new RequestTypeNotSupportedException("Action '" + request.getType() + "' not supported");
+            }
         }
-
-        switch (requestType){
-            case ADD_USER:
-                ResponseCode responseCode = addNewUser(request.getLogin(), request.getPassword());
-                logger.debug("Adding user. Returned %s code.", responseCode);
-                return new PhoneServiceResponse(responseCode);
-            case GET_BALANCE:
-                return getUserBalance(request.getLogin(), request.getPassword());
-            default:
-                //by default we don't have others actions
-                logger.debug("Unknown action %s", requestType);
-                return new PhoneServiceResponse(ResponseCode.UNKNOWN_ACTION);
+        catch (BalanceOfPhoneBaseException ex){
+            ResponseCode errorResponseCode = ResponseCode.getCodeByException(ex.getClass());
+            logger.error("Request {}, errorCode - {}, error - {}", request, errorResponseCode, ex.getMessage());
+            return new PhoneServiceResponse(errorResponseCode);
         }
     }
 
     /**
      * Add new user in data base.
-     * @param dirtyUserLogin user login from request
+     * @param dirtyPhoneNumber user login from request
      * @param password of user
-     * @return result of user adding
+     * @throws UserAlreadyExistsException if user already exists
+     * @throws InvalidLoginException if user login is incorrect
+     * @throws WeakPasswordException if user password is incorrect
      */
-    ResponseCode addNewUser(String dirtyUserLogin, String password) {
-        logger.debug("adding new user with login %s", dirtyUserLogin);
+    void addNewUser(String dirtyPhoneNumber, String password) throws UserAlreadyExistsException
+            , InvalidLoginException, WeakPasswordException
+    {
+        logger.debug("Adding new user with login '{}'", dirtyPhoneNumber);
+        String purePhoneNumber = dataValidator.getPurePhoneNumber(dirtyPhoneNumber);
+        dataValidator.validatePassword(password);
 
-        if (!dataValidator.isValideLogin(dirtyUserLogin)) {
-            logger.debug("invalid login %s", dirtyUserLogin);
-            return ResponseCode.INVALID_LOGIN;
-        }
-
-        String errorMsg = dataValidator.validatePassword(password);
-        if (errorMsg != null) {
-            logger.debug("too weak password %s", password);
-            return ResponseCode.WEAK_PASSWORD;
-        }
-
-        String cleanPhoneLogin = dataValidator.cleanLogin(dirtyUserLogin);
         // First we need to check existing user without synchronize blocking
-        PhoneUser existsUser = phoneServiceDAO.findByLogin(cleanPhoneLogin);
-        if (existsUser != null){
-            logger.debug("user with login %s already exists", cleanPhoneLogin);
-            return ResponseCode.USER_ALREADY_EXISTS;
+        PhoneUser existsUser = phoneServiceDAO.findByLogin(purePhoneNumber);
+        if (existsUser != null) {
+            throw new UserAlreadyExistsException("Cannot add user '" + purePhoneNumber + "'. User already exists");
         }
 
-        PhoneUser newUser = new PhoneUser(null, cleanPhoneLogin, passwordEncoder.encode(password));
-
-        try {
-            phoneServiceDAO.insertPhoneUser(newUser);
-            logger.debug("success add user with login %s", cleanPhoneLogin);
-            return ResponseCode.OK;
-        } catch (UserExistsException ex){
-            logger.debug("user with login %s already exists. Created just now in other thread."
-                    , cleanPhoneLogin);
-            // here we check existing user with synchronize blocking
-            return ResponseCode.USER_ALREADY_EXISTS;
-        }
+        PhoneUser newUser = new PhoneUser(purePhoneNumber, passwordEncoder.encode(password));
+        phoneServiceDAO.insertPhoneUser(newUser);
+        logger.info("Success add user '{}'", purePhoneNumber);
     }
 
     /**
      * Get user phone balance.
-     * @param dirtyUserLogin user login from request
+     * @param dirtyPhoneNumber user login from request
      * @param password of user from request
-     * @return result of getting balance
+     * @return user balance
+     * @throws UserAuthenticationException if user authentication failed
+     * @throws UserNotFoundException if user not found
+     * @throws InvalidLoginException if user login incorrect
+     * @throws WeakPasswordException if user password incorrect
      */
-    PhoneServiceResponse getUserBalance(String dirtyUserLogin, String password){
-        logger.debug("getting balance for user %s", dirtyUserLogin);
+    double getUserBalance(String dirtyPhoneNumber, String password) throws InvalidLoginException
+            , WeakPasswordException, UserAuthenticationException, UserNotFoundException
+    {
+        logger.debug("Getting balance for user '{}'", dirtyPhoneNumber);
+        String purePhoneNumber = dataValidator.getPurePhoneNumber(dirtyPhoneNumber);
+        dataValidator.validatePassword(password);
 
-        if (!dataValidator.isValideLogin(dirtyUserLogin)) {
-            logger.debug("invalid login %s", dirtyUserLogin);
-            return new PhoneServiceResponse(ResponseCode.INVALID_LOGIN);
-        }
-
-        String cleanPhoneLogin = dataValidator.cleanLogin(dirtyUserLogin);
-        PhoneUser phoneUser = phoneServiceDAO.findByLogin(cleanPhoneLogin);
+        PhoneUser phoneUser = phoneServiceDAO.findByLogin(purePhoneNumber);
         if (phoneUser == null){
-            logger.debug("user not found");
-            return new PhoneServiceResponse(ResponseCode.USER_NOT_FOUND);
+            throw new UserNotFoundException("User '" + purePhoneNumber + "' not found");
         }
-
+        // check password with hash from database
         if (!passwordEncoder.matches(password, phoneUser.getHashPassword())){
-            logger.debug("return authentication error code");
-            return new PhoneServiceResponse(ResponseCode.AUTHENTICATION_ERROR);
+            throw new UserAuthenticationException("Password of user '" + purePhoneNumber + "' is incorrect");
         }
 
         double balance = phoneServiceDAO.getBalanceById(phoneUser.getId());
-        PhoneServiceResponse response = new PhoneServiceResponse(ResponseCode.OK);
-        response.setBalance(balance);
-        logger.debug("return response %s", response);
-        return response;
+        logger.debug("For user '{}' return balance {}", purePhoneNumber, balance);
+        return balance;
     }
 }

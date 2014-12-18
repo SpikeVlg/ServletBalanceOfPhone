@@ -1,18 +1,56 @@
 ServletBalanceOfPhone
 ===========
 
-A simple servlet application.
+A simple servlet application "Balance of phone" on spring boot.
 
 # Instructions
 ## Creating DB
-Applications using [SQLite3](http://www.sqlite.org/) (tested with version 3.8.7.4).
+Application use [SQLite3](http://www.sqlite.org/) (tested with version 3.8.7.4)
+or [H2](http://www.h2database.com/html/main.html) (tested with version 1.4.183.
 
+For switching between databases need to edit connection string in
+file ```resources/application.properties```.
+
+### SQLite
 Default path is root folder - ```./ServletBalanceOfPhone/phone_of_balance.db```
 
 For create database use script (scripts/create_sqlite_db.sql). Example:
 
 ```
 sqlite3 phone_of_balance.db  < scripts/create_sqlite_db.sql
+```
+
+Warning: SQLite not supported hibernate.
+
+### H2
+
+For create database use script (scripts/create_h2_db.sql) in h2 database console.
+
+## DAO
+
+Application supports two dao implementations:
+
+1. Spring JDBC Template (PhoneServiceDAOJdbcTemplate)
+2. Hibernate (PhoneServiceDAOHibernate) - Warning: **SQLite not supported**
+
+For switching between DAO implementations need to edit file **MainController.java**
+
+```java
+@Autowired
+public MainController(@Qualifier("hibernate") PhoneServiceDAO phoneServiceDAO, DataValidator dataValidator
+		, PasswordEncoder passwordEncoder){
+	....
+}
+```
+
+On
+
+```java
+@Autowired
+public MainController(@Qualifier("jdbctemplate") PhoneServiceDAO phoneServiceDAO, DataValidator dataValidator
+		, PasswordEncoder passwordEncoder){
+	....
+}
 ```
 
 ## Run application
@@ -24,7 +62,7 @@ Two ways exists:
 
 ## Testing
 
-For testing we can use chrome plagin [Postman](http://www.getpostman.com/).
+For testing can use chrome plugin [Postman](http://www.getpostman.com/).
 
 For work need to set next headers:
 
@@ -91,8 +129,9 @@ Get next result.
 |7|User not found|
 
 ### Environments
-Tested on next envirenment:
+Tested on next environment:
 
 1. JDK 1.8.25
 2. Gradle 2.2
 3. SQLite 3.8.7.4
+4. H2 1.4.183

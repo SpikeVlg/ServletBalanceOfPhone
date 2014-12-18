@@ -5,6 +5,9 @@ import com.google.common.base.MoreObjects;
 import javax.persistence.*;
 import java.util.Objects;
 
+/**
+ * Class represents phone user.
+ */
 @Entity
 @Table(name = "users", uniqueConstraints = {  @UniqueConstraint(columnNames = "login") })
 public class PhoneUser {
@@ -29,6 +32,11 @@ public class PhoneUser {
 
     public PhoneUser(Integer id, String login, String hashPassword) {
         this.id = id;
+        this.login = login;
+        this.hashPassword = hashPassword;
+    }
+
+    public PhoneUser(String login, String hashPassword) {
         this.login = login;
         this.hashPassword = hashPassword;
     }
