@@ -6,7 +6,7 @@ A simple servlet application "Balance of phone" on spring boot.
 # Instructions
 ## Creating DB
 Application use [SQLite3](http://www.sqlite.org/) (tested with version 3.8.7.4)
-or [H2](http://www.h2database.com/html/main.html) (tested with version 1.4.183.
+or [H2](http://www.h2database.com/html/main.html) (tested with version 1.4.183).
 
 For switching between databases need to edit connection string in
 file ```resources/application.properties```.
@@ -28,10 +28,10 @@ For create database use script (scripts/create_h2_db.sql) in h2 database console
 
 ## DAO
 
-Application supports two dao implementations:
+Application supports two DAO implementations:
 
 1. Spring JDBC Template (PhoneServiceDAOJdbcTemplate)
-2. Hibernate (PhoneServiceDAOHibernate) - Warning: **SQLite not supported**
+2. Hibernate (PhoneServiceDAOHibernate) - Warning: **SQLite not supported hibernate**
 
 For switching between DAO implementations need to edit file **MainController.java**
 
@@ -54,9 +54,9 @@ public MainController(@Qualifier("jdbctemplate") PhoneServiceDAO phoneServiceDAO
 ```
 
 ## Run application
-Two ways exists:
+Two ways:
 
-1. Run servlet local with command ```gradle bootRun``` and we get servlet by url
+1. Run servlet local with command ```gradle bootRun``` and get servlet by url
 [http://localhost:8080/balance_of_phone]((http://localhost:8080/balance_of_phone)).
 2. Run ```gradle war``` and deploy war-file in servlet container.
 
