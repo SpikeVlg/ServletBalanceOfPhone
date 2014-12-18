@@ -14,13 +14,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Implementation PhoneServiceDAO via Spring JdbcTemplate mechanism.
  */
-@Component
+@Component("jdbctemplate")
 public class PhoneServiceDAOJdbcTemplate implements PhoneServiceDAO{
-    private Logger logger = LoggerFactory.getLogger(PhoneServiceDAOJdbcTemplate.class);;
+    private static final Logger logger = LoggerFactory.getLogger(PhoneServiceDAOJdbcTemplate.class);;
     private JdbcTemplate jdbcTemplate;
     private SimpleJdbcInsert userInserter;
     private RowMapper<PhoneUser> phoneUserMapper;
@@ -44,35 +45,39 @@ public class PhoneServiceDAOJdbcTemplate implements PhoneServiceDAO{
      */
     @Override
     public PhoneUser findByLogin(String login) {
-        logger.debug("find by login %s", login);
+        logger.debug("Find by login '{}'", login);
+        Objects.requireNonNull(login, "login cannot be null");
+
         final String SELECT_USER_BY_ID = "SELECT id, login, hash_password FROM users WHERE login = ?";
         try {
             PhoneUser phoneUser = jdbcTemplate.queryForObject(SELECT_USER_BY_ID
                     , phoneUserMapper, login);
-            logger.debug("return %s", phoneUser);
+            logger.debug("Return {}", phoneUser);
             return phoneUser;
         } catch (EmptyResultDataAccessException ex){
-            logger.debug("user not found");
+            logger.error("User witt login '{}' not found", login);
             return null;
         }
     }
 
     /**
      * Find phoneUser by user ID.
-     * @param userID - user ID in database
+     * @param userId - user ID in database
      * @return phoneUser object or null if not exists user
      */
     @Override
-    public PhoneUser findById(Integer userID) {
-        logger.debug("find by user ID %s", userID);
+    public PhoneUser findById(Integer userId) {
+        logger.debug("Find by user ID '{}'", userId);
+        Objects.requireNonNull(userId, "userId cannot be null");
+
         final String SELECT_USER_BY_ID = "SELECT id, login, hash_password FROM users WHERE id = ?";
         try {
             PhoneUser phoneUser = jdbcTemplate.queryForObject(SELECT_USER_BY_ID
-                    , phoneUserMapper, userID);
-            logger.debug("return %s", phoneUser);
+                    , phoneUserMapper, userId);
+            logger.debug("Return {}", phoneUser);
             return phoneUser;
         } catch (EmptyResultDataAccessException ex){
-            logger.debug("user not found");
+            logger.error("User with id '{}' not found", userId);
             return null;
         }
     }
@@ -80,22 +85,20 @@ public class PhoneServiceDAOJdbcTemplate implements PhoneServiceDAO{
     /**
      * Create new phone user and set balance 0.00 value.
      * @param newPhoneUser object for insert into database
-     * @throws UserExistsException if user already exists
+     * @throws UserAlreadyExistsException if user already exists
      */
     @Override
     @Transactional(propagation=Propagation.REQUIRED)
-    public synchronized void insertPhoneUser(PhoneUser newPhoneUser) throws UserExistsException{
-        logger.debug("try insert user %s", newPhoneUser);
-        if (newPhoneUser == null){
-            logger.error("newPhoneUser must be not null");
-            throw new IllegalArgumentException("newPhoneUser must be not null");
-        }
+    public synchronized void insertPhoneUser(PhoneUser newPhoneUser) throws UserAlreadyExistsException {
+        logger.debug("Try insert user {}", newPhoneUser);
+        Objects.requireNonNull(newPhoneUser, "newPhoneUser cannot be null");
 
-        // we need to check existing user in synchronize block.
+        // we need to check existing user in synchronize block because other thread
+        // can to create user
         PhoneUser oldPhoneUser = findByLogin(newPhoneUser.getLogin());
         if (oldPhoneUser != null){
-            logger.error("user with login %s already exists", newPhoneUser.getLogin());
-            throw new UserExistsException("User with login '" + newPhoneUser.getLogin()
+            logger.error("User with login '{}' already exists", newPhoneUser.getLogin());
+            throw new UserAlreadyExistsException("User with login '" + newPhoneUser.getLogin()
                     + "' already exists!");
         }
 
@@ -104,13 +107,13 @@ public class PhoneServiceDAOJdbcTemplate implements PhoneServiceDAO{
         newUserProperty.put(COLUMN_HASH_PASSWORD, newPhoneUser.getHashPassword());
 
         Number insertedUserId = userInserter.executeAndReturnKey(newUserProperty);
-        logger.debug("user added with id = %s", insertedUserId);
+        logger.debug("User added with id '{}'", insertedUserId);
 
         newPhoneUser.setId(insertedUserId.intValue());
 
         final String INSERT_BALANCE = "insert into phone_balance(user_id, balance) values (?, ?)";
         int balanceId = jdbcTemplate.update(INSERT_BALANCE, insertedUserId.intValue(), 0.0);
-        logger.debug("balance added with id = %s", balanceId);
+        logger.debug("Balance added with id '{}'", balanceId);
     }
 
     /**
@@ -120,14 +123,16 @@ public class PhoneServiceDAOJdbcTemplate implements PhoneServiceDAO{
      */
     @Override
     public double getBalanceByLogin(String login) {
-        logger.debug("get balance by login %s", login);
+        logger.debug("Get balance by login '{}'", login);
+        Objects.requireNonNull(login, "newPhoneUser cannot be null");
+
         double balance = jdbcTemplate.queryForObject(
                 "select b.balance from phone_balance b"
                         + " inner join users u"
                         + " on u.id = b.user_id"
                         + " where u.login = ?"
                 , Double.class, login);
-        logger.debug("return balance %s", balance);
+        logger.debug("Return balance {}", balance);
         return balance;
     }
 
@@ -138,10 +143,12 @@ public class PhoneServiceDAOJdbcTemplate implements PhoneServiceDAO{
      */
     @Override
     public double getBalanceById(Integer userId) {
-        logger.debug("get balance by user ID %s", userId);
+        logger.debug("Get balance by user ID {}", userId);
+        Objects.requireNonNull(userId, "userID cannot be null");
+
         double balance = jdbcTemplate.queryForObject("select balance from phone_balance where user_id = ?"
                 , Double.class, userId);
-        logger.debug("return balance %s", balance);
+        logger.debug("Return balance {}", balance);
         return balance;
     }
 }

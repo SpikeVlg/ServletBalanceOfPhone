@@ -30,6 +30,11 @@ public class PhoneServiceResponse {
         this.code = code;
     }
 
+    public PhoneServiceResponse(ResponseCode code, Double balance){
+        this.code = code;
+        this.balance = balance;
+    }
+
     public ResponseCode getCode() {
         return code;
     }

@@ -8,25 +8,36 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Objects;
 
+/**
+ * Class represents request message to servlet and rules to xml transformation.
+ */
 @XmlRootElement(name="request")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class PhoneServiceRequest {
+    /**
+     * Type of request to servlet.
+     */
     @XmlElement(required = true, name="request-type")
-    private String type;
-
+    private RequestType type;
+    /**
+     * User login. Login represents phone number.
+     */
     @XmlElement(required = true, name="login")
     private String login;
+    /**
+     * User password.
+     */
     @XmlElement(required = true, name="password")
     private String password;
 
     public PhoneServiceRequest() {
     }
 
-    public String getType() {
+    public RequestType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(RequestType type) {
         this.type = type;
     }
 
@@ -48,11 +59,11 @@ public class PhoneServiceRequest {
 
     @Override
     public String toString() {
+        // don't show user password
         return MoreObjects.toStringHelper(this)
                 .omitNullValues()
                 .add("type", type)
                 .add("login", login)
-                .add("password", password)
                 .toString();
     }
 

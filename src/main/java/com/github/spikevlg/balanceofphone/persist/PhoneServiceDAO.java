@@ -15,17 +15,17 @@ public interface PhoneServiceDAO {
 
     /**
      * Find phoneUser by user ID.
-     * @param userID - user ID in database
+     * @param userId - user ID in database
      * @return phoneUser object or null if not exists user
      */
-    PhoneUser findById(Integer userID);
+    PhoneUser findById(Integer userId);
 
     /**
      * Create new phone user and set balance 0.00 value.
      * @param phoneUser object for insert into database
-     * @throws UserExistsException if user already exists
+     * @throws UserAlreadyExistsException if user already exists
      */
-    void insertPhoneUser(PhoneUser phoneUser) throws UserExistsException;
+    void insertPhoneUser(PhoneUser phoneUser) throws UserAlreadyExistsException;
 
     /**
      * Get user balance by login.
