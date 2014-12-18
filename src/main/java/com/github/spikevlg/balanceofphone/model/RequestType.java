@@ -1,32 +1,21 @@
 package com.github.spikevlg.balanceofphone.model;
 
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
+import javax.xml.bind.annotation.XmlType;
+
 /**
- * Type of request for servlet balance of phone.
+ * Types of request for servlet balance of phone.
  */
+@XmlType
+@XmlEnum(String.class)
 public enum RequestType {
-    ADD_USER("new-agt")
-    , GET_BALANCE("agt-bal");
-
     /**
-     * XML code of request.
+     * Add new user.
      */
-    String code;
-
-    RequestType(String code){
-        this.code = code;
-    }
-
+    @XmlEnumValue("new-agt") ADD_USER
     /**
-     * Get RequestType by code. If requestType for this code not exists then return null.
-     * @param code - code of request.
-     * @return RequestType or null if not find RequestType.
+     * Get balance of user
      */
-    public static RequestType getRequestTypeByCode(String code){
-        for(RequestType currentRequestType: values()){
-            if (code.equals(currentRequestType.code)){
-                return currentRequestType;
-            }
-        }
-        return null;
-    }
+    , @XmlEnumValue("agt-bal") GET_BALANCE;
 }
