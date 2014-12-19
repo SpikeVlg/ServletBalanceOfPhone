@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
 import java.util.Objects;
 
-@Transactional
 @Component("hibernate")
 public class PhoneServiceDAOHibernate implements PhoneServiceDAO {
     private static final Logger logger = LoggerFactory.getLogger(PhoneServiceDAOHibernate.class);;
@@ -62,6 +61,7 @@ public class PhoneServiceDAOHibernate implements PhoneServiceDAO {
      * @param phoneUser object for insert into database
      * @throws com.github.spikevlg.balanceofphone.persist.UserAlreadyExistsException if user already exists
      */
+    @Transactional
     @Override
     public synchronized void insertPhoneUser(PhoneUser phoneUser) throws UserAlreadyExistsException {
         logger.debug("Try insert user {}", phoneUser);
